@@ -44,33 +44,6 @@ html, body {
     overflow: hidden;
 }
 
-/* === Creator Credit === */
-.creator-credit {
-    position: fixed;
-    top: 24px;
-    right: 24px;
-    z-index: 101; /* Above input and cards, but below drawer (200) */
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-    text-decoration: none;
-    font-weight: 500;
-    opacity: 0.5;
-    transition: all 0.2s ease;
-    padding: 6px 12px;
-    border-radius: 99px;
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid transparent;
-    backdrop-filter: blur(4px);
-}
-
-.creator-credit:hover {
-    opacity: 1;
-    color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
-    transform: translateY(1px);
-}
-
 /* === Stage (The Deck) === */
 .stage-container {
     position: absolute;
@@ -598,11 +571,6 @@ html, body {
 
 /* Responsive Grid for smaller screens */
 @media (max-width: 1024px) {
-    /* Hide creator credit when generation has started on mobile */
-    .creator-credit.hide-on-mobile {
-        display: none !important;
-    }
-
     .artifact-grid {
         grid-template-columns: 1fr;
         height: 100%;

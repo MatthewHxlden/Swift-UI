@@ -308,7 +308,7 @@ Return ONLY a raw JSON array of 3 *NEW*, creative names for these directions (e.
         const generateArtifact = async (artifact: Artifact, styleInstruction: string) => {
             try {
                 const prompt = `
-You are Flash UI. Create a stunning, high-fidelity UI component for: "${trimmedInput}".
+You are Swift UI. Create a stunning, high-fidelity UI component for: "${trimmedInput}".
 
 **CONCEPTUAL DIRECTION: ${styleInstruction}**
 
@@ -432,10 +432,6 @@ Return ONLY RAW HTML. No markdown fences.
 
   return (
     <>
-        <a href="https://x.com/ammaar" target="_blank" rel="noreferrer" className={`creator-credit ${hasStarted ? 'hide-on-mobile' : ''}`}>
-            created by @ammaar
-        </a>
-
         <SideDrawer 
             isOpen={drawerState.isOpen} 
             onClose={() => setDrawerState(s => ({...s, isOpen: false}))} 
@@ -478,8 +474,8 @@ Return ONLY RAW HTML. No markdown fences.
             <div className={`stage-container ${focusedArtifactIndex !== null ? 'mode-focus' : 'mode-split'}`}>
                  <div className={`empty-state ${hasStarted ? 'fade-out' : ''}`}>
                      <div className="empty-content">
-                         <h1>Flash UI</h1>
-                         <p>Creative UI generation in a flash</p>
+                         <h1>Swift UI</h1>
+                         <p>creative UI generation... swiftly.</p>
                          <button className="surprise-button" onClick={handleSurpriseMe} disabled={isLoading}>
                              <SparklesIcon /> Surprise Me
                          </button>
