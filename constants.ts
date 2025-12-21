@@ -4,7 +4,7 @@
 */
 
 export const INITIAL_PLACEHOLDERS = [
-    "Design a minimalist weather card",
+    "Design a JaeSwift style terminal",
     "Show me a live stock ticker",
     "Create a futuristic login form",
     "Build a stock portfolio dashboard",
