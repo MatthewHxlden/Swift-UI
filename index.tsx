@@ -25,7 +25,7 @@ import {
   GridIcon
 } from './components/Icons';
 
-const VENICE_MODEL = 'zai-org-glm-4.6';
+const VENICE_MODEL = 'qwen3-coder-480b-a35b-instruct';
 
 /**
  * call your vercel serverless function (server holds VENICE_API_KEY).
@@ -157,7 +157,7 @@ function App() {
           model: VENICE_MODEL,
           messages: [{
             role: 'user',
-            content: 'Generate 20 creative, short, diverse UI component prompts (e.g. "bioluminescent task list"). Return ONLY a raw JSON array of strings. IP SAFEGUARD: Avoid referencing specific famous artists, movies, or brands.'
+            content: 'Generate 20 creative, diverse UI component prompts (e.g. "bioluminescent task list"). Return ONLY a raw JSON array of strings.'
           }]
         });
 
@@ -383,9 +383,8 @@ You are Swift UI. Create a stunning, high-fidelity UI component for: "${trimmedI
 
 **VISUAL EXECUTION RULES:**
 1. **Materiality**: Use the specified metaphor to drive every CSS choice. (e.g. if Risograph, use \`feTurbulence\` for grain and \`mix-blend-mode: multiply\` for ink layering).
-2. **Typography**: Use high-quality web fonts. Pair a bold sans-serif with a refined monospace for data.
+2. **Typography**: Use high-quality web fonts. Pair a bold sans-serif with a refined monospace for data. Use logo style fonts for website headers/banners
 3. **Motion**: Include subtle, high-performance CSS/JS animations (hover transitions, entry reveals).
-4. **IP SAFEGUARD**: No artist names or trademarks.
 5. **Layout**: Be bold with negative space and hierarchy. Avoid generic cards.
 
 Return ONLY RAW HTML. No markdown fences.
