@@ -5,7 +5,7 @@
 
 //Vibe coded by ammaar@google.com
 
-import { GoogleGenAI } from '@google/genai';
+import OpenAI from 'openai';
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 
@@ -25,6 +25,46 @@ import {
     ArrowUpIcon, 
     GridIcon 
 } from './components/Icons';
+
+const VENICE_MODEL = 'zai-org-glm-4.6';
+const VENICE_BASE_URL = 'https://api.venice.ai/api/v1';
+
+const getVeniceClient = () => {
+    const apiKey = import.meta.env.VITE_VENICE_API_KEY;
+    if (!apiKey) throw new Error("VITE_VENICE_API_KEY is not configured.");
+
+    return new OpenAI({
+        apiKey,
+        baseURL: VENICE_BASE_URL,
+        dangerouslyAllowBrowser: true,
+    });
+};
+
+const normalizeDeltaContent = (content: unknown): string => {
+    if (!content) return '';
+    if (typeof content === 'string') return content;
+    if (Array.isArray(content)) {
+        return content.map((part) => {
+            if (typeof part === 'string') return part;
+            if (part && typeof part === 'object' && 'text' in part && typeof (part as any).text === 'string') {
+                return (part as any).text as string;
+            }
+            return '';
+        }).join('');
+    }
+    if (typeof content === 'object' && 'text' in (content as any) && typeof (content as any).text === 'string') {
+        return (content as any).text as string;
+    }
+    return '';
+};
+
+async function* streamTextFromChat(completionStream: AsyncIterable<any>) {
+    for await (const chunk of completionStream) {
+        const delta = chunk?.choices?.[0]?.delta?.content;
+        const text = normalizeDeltaContent(delta);
+        if (text) yield text;
+    }
+}
 
 function App() {
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -74,19 +114,15 @@ function App() {
   useEffect(() => {
       const fetchDynamicPlaceholders = async () => {
           try {
-              const apiKey = process.env.API_KEY;
-              if (!apiKey) return;
-              const ai = new GoogleGenAI({ apiKey });
-              const response = await ai.models.generateContent({
-                  model: 'gemini-3-flash-preview',
-                  contents: { 
-                      role: 'user', 
-                      parts: [{ 
-                          text: 'Generate 20 creative, short, diverse UI component prompts (e.g. "bioluminescent task list"). Return ONLY a raw JSON array of strings. IP SAFEGUARD: Avoid referencing specific famous artists, movies, or brands.' 
-                      }] 
-                  }
+              const ai = getVeniceClient();
+              const response = await ai.chat.completions.create({
+                  model: VENICE_MODEL,
+                  messages: [{
+                      role: 'user',
+                      content: 'Generate 20 creative, short, diverse UI component prompts (e.g. "bioluminescent task list"). Return ONLY a raw JSON array of strings. IP SAFEGUARD: Avoid referencing specific famous artists, movies, or brands.'
+                  }]
               });
-              const text = response.text || '[]';
+              const text = response.choices?.[0]?.message?.content || '[]';
               const jsonMatch = text.match(/\[[\s\S]*\]/);
               if (jsonMatch) {
                   const newPlaceholders = JSON.parse(jsonMatch[0]);
@@ -106,11 +142,9 @@ function App() {
     setInputValue(event.target.value);
   };
 
-  const parseJsonStream = async function* (responseStream: AsyncGenerator<{ text: string }>) {
+  const parseJsonStream = async function* (textStream: AsyncIterable<string>) {
       let buffer = '';
-      for await (const chunk of responseStream) {
-          const text = chunk.text;
-          if (typeof text !== 'string') continue;
+      for await (const text of textStream) {
           buffer += text;
           let braceCount = 0;
           let start = buffer.indexOf('{');
@@ -151,9 +185,7 @@ function App() {
     setDrawerState({ isOpen: true, mode: 'variations', title: 'Variations', data: currentArtifact.id });
 
     try {
-        const apiKey = process.env.API_KEY;
-        if (!apiKey) throw new Error("API_KEY is not configured.");
-        const ai = new GoogleGenAI({ apiKey });
+        const ai = getVeniceClient();
 
         const prompt = `
 You are a master UI/UX designer. Generate 3 RADICAL CONCEPTUAL VARIATIONS of: "${currentSession.prompt}".
@@ -178,13 +210,14 @@ Required JSON Output Format (stream ONE object per line):
 \`{ "name": "Persona Name", "html": "..." }\`
         `.trim();
 
-        const responseStream = await ai.models.generateContentStream({
-            model: 'gemini-3-flash-preview',
-             contents: [{ parts: [{ text: prompt }], role: 'user' }],
-             config: { temperature: 1.2 }
+        const responseStream = await ai.chat.completions.create({
+            model: VENICE_MODEL,
+            messages: [{ role: 'user', content: prompt }],
+            temperature: 1.2,
+            stream: true
         });
 
-        for await (const variation of parseJsonStream(responseStream)) {
+        for await (const variation of parseJsonStream(streamTextFromChat(responseStream))) {
             if (variation.name && variation.html) {
                 setComponentVariations(prev => [...prev, variation]);
             }
@@ -247,9 +280,7 @@ Required JSON Output Format (stream ONE object per line):
     setFocusedArtifactIndex(null); 
 
     try {
-        const apiKey = process.env.API_KEY;
-        if (!apiKey) throw new Error("API_KEY is not configured.");
-        const ai = new GoogleGenAI({ apiKey });
+        const ai = getVeniceClient();
 
         const stylePrompt = `
 Generate 3 distinct, highly evocative design directions for: "${trimmedInput}".
@@ -267,13 +298,13 @@ Never use artist or brand names. Use physical and material metaphors.
 Return ONLY a raw JSON array of 3 *NEW*, creative names for these directions (e.g. ["Tactile Risograph Press", "Kinetic Silhouette Balance", "Primary Pigment Gridwork"]).
         `.trim();
 
-        const styleResponse = await ai.models.generateContent({
-            model: 'gemini-3-flash-preview',
-            contents: { role: 'user', parts: [{ text: stylePrompt }] }
+        const styleResponse = await ai.chat.completions.create({
+            model: VENICE_MODEL,
+            messages: [{ role: 'user', content: stylePrompt }]
         });
 
         let generatedStyles: string[] = [];
-        const styleText = styleResponse.text || '[]';
+        const styleText = styleResponse.choices?.[0]?.message?.content || '[]';
         const jsonMatch = styleText.match(/\[[\s\S]*\]/);
         
         if (jsonMatch) {
@@ -322,25 +353,23 @@ You are Swift UI. Create a stunning, high-fidelity UI component for: "${trimmedI
 Return ONLY RAW HTML. No markdown fences.
           `.trim();
           
-                const responseStream = await ai.models.generateContentStream({
-                    model: 'gemini-3-flash-preview',
-                    contents: [{ parts: [{ text: prompt }], role: "user" }],
+                const responseStream = await ai.chat.completions.create({
+                    model: VENICE_MODEL,
+                    messages: [{ role: 'user', content: prompt }],
+                    stream: true
                 });
 
                 let accumulatedHtml = '';
-                for await (const chunk of responseStream) {
-                    const text = chunk.text;
-                    if (typeof text === 'string') {
-                        accumulatedHtml += text;
-                        setSessions(prev => prev.map(sess => 
-                            sess.id === sessionId ? {
-                                ...sess,
-                                artifacts: sess.artifacts.map(art => 
-                                    art.id === artifact.id ? { ...art, html: accumulatedHtml } : art
-                                )
-                            } : sess
-                        ));
-                    }
+                for await (const text of streamTextFromChat(responseStream)) {
+                    accumulatedHtml += text;
+                    setSessions(prev => prev.map(sess => 
+                        sess.id === sessionId ? {
+                            ...sess,
+                            artifacts: sess.artifacts.map(art => 
+                                art.id === artifact.id ? { ...art, html: accumulatedHtml } : art
+                            )
+                        } : sess
+                    ));
                 }
                 
                 let finalHtml = accumulatedHtml.trim();
