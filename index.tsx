@@ -25,7 +25,7 @@ import {
   GridIcon
 } from './components/Icons';
 
-const VENICE_MODEL = 'deepseek-v3.2';
+const VENICE_MODEL = 'google-gemma-3-27b-it';
 
 /**
  * call your vercel serverless function (server holds VENICE_API_KEY).
