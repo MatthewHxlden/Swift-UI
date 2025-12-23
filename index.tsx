@@ -25,7 +25,7 @@ import {
   GridIcon
 } from './components/Icons';
 
-const VENICE_MODEL = 'qwen3-next-80b';
+const VENICE_MODEL = 'openai-gpt-oss-120b';
 
 /**
  * call your vercel serverless function (server holds VENICE_API_KEY).
