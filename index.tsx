@@ -25,7 +25,7 @@ import {
   GridIcon
 } from './components/Icons';
 
-const VENICE_MODEL = 'openai-gpt-oss-120b';
+const VENICE_MODEL = 'deepseek-v3.2';
 
 /**
  * call your vercel serverless function (server holds VENICE_API_KEY).
