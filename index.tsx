@@ -25,7 +25,7 @@ import {
   GridIcon
 } from './components/Icons';
 
-const VENICE_MODEL = 'google-gemma-3-27b-it';
+const VENICE_MODEL = 'qwen3-coder-480b-a35b-instruct';
 
 /**
  * call your vercel serverless function (server holds VENICE_API_KEY).
