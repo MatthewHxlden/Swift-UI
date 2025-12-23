@@ -25,7 +25,7 @@ import {
   GridIcon
 } from './components/Icons';
 
-const VENICE_MODEL = 'qwen3-coder-480b-a35b-instruct';
+const VENICE_MODEL = 'qwen3-next-80b';
 
 /**
  * call your vercel serverless function (server holds VENICE_API_KEY).
